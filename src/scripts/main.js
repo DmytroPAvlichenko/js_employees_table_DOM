@@ -2,8 +2,6 @@
 
 const thead = document.querySelector('thead');
 const tbody = document.querySelector('tbody');
-const rowsTr = tbody.querySelectorAll('tr');
-const tableCells = document.querySelectorAll('td');
 
 let lastSortedColumn = null;
 let sortDirection = 'asc';
@@ -40,6 +38,8 @@ tbody.addEventListener('click', (even) => {
   const row = even.target.closest('tr');
 
   if (row) {
+    const rowsTr = tbody.querySelectorAll('tr');
+
     rowsTr.forEach((rows) => rows.classList.remove('active'));
     row.classList.add('active');
   }
@@ -184,7 +184,7 @@ function createEmployeeForm() {
       10,
       10,
       'Title of Success message',
-      'Message example.\n ' + 'Employee successfully adbe.',
+      'Message example.\n ' + 'Employee successfully added.',
       'success',
     );
   });
@@ -221,40 +221,40 @@ const pushNotification = (posTop, posRight, title, description, type) => {
   }, 2000);
 };
 
-tableCells.forEach((cell) => {
-  cell.addEventListener('dblclick', function () {
-    if (cell.querySelector('input')) {
-      return;
+tbody.addEventListener('dblclick', function (element) {
+  const cell = element.target;
+
+  if (cell.querySelector('input')) {
+    return;
+  }
+
+  const currentText = cell.textContent.trim();
+
+  if (currentText.length <= 0) {
+    return;
+  }
+
+  cell.innerHTML = `<input class="cell-input" value="">`;
+
+  const inputField = cell.querySelector('input');
+
+  inputField.focus();
+
+  function saveValue() {
+    const newValue = inputField.value.trim();
+
+    if (newValue === '') {
+      cell.textContent = currentText;
+    } else {
+      cell.textContent = newValue;
     }
+  }
+  inputField.addEventListener('blur', saveValue);
 
-    const currentText = cell.textContent.trim();
-
-    if (currentText.length <= 0) {
-      return;
+  inputField.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      saveValue();
+      inputField.blur();
     }
-
-    cell.innerHTML = `<input class="cell-input" value="">`;
-
-    const inputField = cell.querySelector('input');
-
-    inputField.focus();
-
-    function saveValue() {
-      const newValue = inputField.value.trim();
-
-      if (newValue === '') {
-        cell.textContent = currentText;
-      } else {
-        cell.textContent = newValue;
-      }
-    }
-    inputField.addEventListener('blur', saveValue);
-
-    inputField.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        saveValue();
-        inputField.blur();
-      }
-    });
   });
 });
