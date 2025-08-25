@@ -2,60 +2,30 @@
 
 const thead = document.querySelector('thead');
 const tbody = document.querySelector('tbody');
+const tbodyTr = document.querySelectorAll('tbody tr');
+const body = document.querySelector('body');
+const arrayTbodyTr = Array.from(tbody.querySelectorAll('tr'));
+const rowBody = Array.from(tbody.rows);
+const arryTheadTH = Array.from(thead.querySelectorAll('th'));
 
-let lastSortedColumn = null;
-let sortDirection = 'asc';
+const cities = [
+  'Tokyo',
+  'Singapore',
+  'London',
+  'New York',
+  'Edinburgh',
+  'San Francisco',
+];
 
-thead.addEventListener('click', (elem) => {
-  if (elem.target.tagName === 'TH') {
-    const columnIndex = elem.target.cellIndex;
-
-    if (lastSortedColumn === columnIndex) {
-      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      sortDirection = 'asc';
-    }
-
-    lastSortedColumn = columnIndex;
-
-    const rows = Array.from(tbody.rows);
-
-    const sorted = rows.sort((rowA, rowB) => {
-      const cellA = rowA.cells[columnIndex].textContent.trim();
-      const cellB = rowB.cells[columnIndex].textContent.trim();
-
-      const compareResult = cellA.localeCompare(cellB, 'uk', { numeric: true });
-
-      return sortDirection === 'asc' ? compareResult : -compareResult;
-    });
-
-    tbody.innerHTML = '';
-    sorted.forEach((row) => tbody.appendChild(row));
-  }
-});
-
-tbody.addEventListener('click', (even) => {
-  const row = even.target.closest('tr');
-
-  if (row) {
-    const rowsTr = tbody.querySelectorAll('tr');
-
-    rowsTr.forEach((rows) => rows.classList.remove('active'));
-    row.classList.add('active');
-  }
-});
-
-function createLabel(labelText, inputType, inputName, InputData) {
-  const label = document.createElement('label');
-
-  label.textContent = labelText;
-  label.setAttribute('for', inputName);
-
+function createLabel(content, names, data, type, tegName = 'label') {
+  const label = document.createElement(tegName);
   const input = document.createElement('input');
 
-  input.setAttribute('type', inputType);
-  input.setAttribute('name', inputName);
-  input.setAttribute('data-qa', InputData);
+  label.textContent = content;
+
+  input.setAttribute('data-qa', data);
+  input.setAttribute('name', names);
+  input.setAttribute('type', type);
   input.setAttribute('required', '');
 
   label.appendChild(input);
@@ -63,52 +33,76 @@ function createLabel(labelText, inputType, inputName, InputData) {
   return label;
 }
 
-function createEmployeeForm() {
+const pushNotification = (posTop, posRight, title, description, type) => {
+  const div = document.createElement('div');
+
+  div.classList = `notification ${type}`;
+  div.setAttribute('data-qa', 'notification');
+
+  const h2 = document.createElement('h2');
+
+  h2.classList.add('title');
+  h2.textContent = title;
+
+  const p = document.createElement('p');
+
+  p.textContent = description;
+
+  div.appendChild(h2);
+  div.appendChild(p);
+
+  div.style.position = 'absolute';
+  div.style.top = `${posTop}px`;
+  div.style.right = `${posRight}px`;
+
+  document.body.appendChild(div);
+
+  setTimeout(() => {
+    div.remove();
+  }, 2000);
+};
+
+function createForm() {
   const form = document.createElement('form');
 
   form.classList.add('new-employee-form');
 
-  const office = document.createElement('label');
+  const labelName = createLabel('name :', 'name', 'name', 'text');
+  const labelPosition = createLabel(
+    'Position :',
+    'position',
+    'position',
+    'text',
+  );
+  const labelAge = createLabel('Age :', 'age', 'age', 'number');
+  const labelSalry = createLabel('Salary :', 'salary', 'salary', 'number');
+  const Office = document.createElement('label');
 
-  office.textContent = 'office';
-  office.setAttribute('for', 'office');
+  Office.textContent = 'Office :';
+  Office.setAttribute('for', 'office');
 
   const officeSelection = document.createElement('select');
 
-  officeSelection.setAttribute('name', 'office');
   officeSelection.setAttribute('data-qa', 'office');
+  officeSelection.setAttribute('name', 'office');
+  officeSelection.setAttribute('type', 'type');
   officeSelection.setAttribute('required', '');
 
-  const cities = [
-    'Tokyo',
-    'Singapore',
-    'London',
-    'New York',
-    'Edinburgh',
-    'San Francisco',
-  ];
+  Office.appendChild(officeSelection);
 
-  cities.forEach((city) => {
+  cities.forEach((el) => {
     const option = document.createElement('option');
 
-    option.value = city;
-    option.textContent = city;
+    option.value = el;
+    option.textContent = el;
+    option.setAttribute('value', el);
+
     officeSelection.appendChild(option);
   });
-
-  office.appendChild(officeSelection);
 
   const button = document.createElement('button');
 
   button.textContent = 'Save to table';
-  form.appendChild(createLabel('Name', 'text', 'name', 'name'));
-  form.appendChild(createLabel('Position', 'text', 'position', 'position'));
-  form.appendChild(office);
-  form.appendChild(createLabel('Age', 'number', 'age', 'age'));
-  form.appendChild(createLabel('Salary', 'number', 'salary', 'salary'));
-  form.appendChild(button);
-
-  document.body.appendChild(form);
 
   button.addEventListener('click', (elemForm) => {
     elemForm.preventDefault();
@@ -171,14 +165,13 @@ function createEmployeeForm() {
     const formattedSalary = new Intl.NumberFormat('en-US').format(salary);
 
     row.innerHTML = `
-      <td>${names}</td>
-      <td>${position}</td>
-      <td>${offices}</td>
-      <td>${age}</td>
-      <td>${`$${formattedSalary}`}</td>
-    `;
+    <td>${names}</td>
+    <td>${position}</td>
+    <td>${offices}</td>
+    <td>${age}</td>
+    <td>${`$${formattedSalary}`}</td>
+  `;
     tbody.appendChild(row);
-    form.reset();
 
     pushNotification(
       10,
@@ -188,73 +181,50 @@ function createEmployeeForm() {
       'success',
     );
   });
+
+  body.appendChild(form);
+  form.appendChild(labelName);
+  form.appendChild(labelPosition);
+  form.appendChild(Office);
+  form.appendChild(labelAge);
+  form.appendChild(labelSalry);
+  form.appendChild(button);
 }
 
-createEmployeeForm();
+createForm();
 
-const pushNotification = (posTop, posRight, title, description, type) => {
-  const div = document.createElement('div');
+function classRemove(arr, clasName, targetel) {
+  arr
+    .filter((el) => el !== targetel)
+    .forEach((el) => {
+      el.classList.remove(clasName);
+    });
+}
 
-  div.classList = `notification ${type}`;
-  div.setAttribute('data-qa', 'notification');
+thead.addEventListener('click', (even) => {
+  if (even.target.tagName === 'TH') {
+    const columIndex = even.target.cellIndex;
 
-  const h2 = document.createElement('h2');
+    classRemove(arryTheadTH, 'asc', even.target);
 
-  h2.classList.add('title');
-  h2.textContent = title;
+    const asc = even.target.classList.toggle('asc');
 
-  const p = document.createElement('p');
+    const sort = rowBody.sort((a, b) => {
+      const positionA = a.cells[columIndex].textContent.trim();
+      const positionB = b.cells[columIndex].textContent.trim();
 
-  p.textContent = description;
+      return asc
+        ? positionA.localeCompare(positionB, undefined, { numeric: true })
+        : positionB.localeCompare(positionA, undefined, { numeric: true });
+    });
 
-  div.appendChild(h2);
-  div.appendChild(p);
-
-  div.style.position = 'absolute';
-  div.style.top = `${posTop}px`;
-  div.style.right = `${posRight}px`;
-
-  document.body.appendChild(div);
-
-  setTimeout(() => {
-    div.remove();
-  }, 2000);
-};
-
-tbody.addEventListener('dblclick', function (element) {
-  const cell = element.target;
-
-  if (cell.querySelector('input')) {
-    return;
+    sort.forEach((el) => tbody.appendChild(el));
   }
+});
 
-  const currentText = cell.textContent.trim();
-
-  if (currentText.length <= 0) {
-    return;
-  }
-
-  cell.innerHTML = `<input class="cell-input" value="">`;
-
-  const inputField = cell.querySelector('input');
-
-  inputField.focus();
-
-  function saveValue() {
-    const newValue = inputField.value.trim();
-
-    if (newValue === '') {
-      cell.textContent = currentText;
-    } else {
-      cell.textContent = newValue;
-    }
-  }
-  inputField.addEventListener('blur', saveValue);
-
-  inputField.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      saveValue();
-      inputField.blur();
-    }
+tbodyTr.forEach((elem) => {
+  elem.addEventListener('click', (even) => {
+    classRemove(arrayTbodyTr, 'active', even.target);
+    even.target.closest('tr').classList.toggle('active');
   });
 });
