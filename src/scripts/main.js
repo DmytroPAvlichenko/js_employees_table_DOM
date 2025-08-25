@@ -17,14 +17,14 @@ const cities = [
   'San Francisco',
 ];
 
-function createLabel(content, names, data, type, tegName = 'label') {
+function createLabel(content, inputName, data, type, tegName = 'label') {
   const label = document.createElement(tegName);
   const input = document.createElement('input');
 
   label.textContent = content;
 
   input.setAttribute('data-qa', data);
-  input.setAttribute('name', names);
+  input.setAttribute('name', inputName);
   input.setAttribute('type', type);
   input.setAttribute('required', '');
 
@@ -226,5 +226,34 @@ tbodyTr.forEach((elem) => {
   elem.addEventListener('click', (even) => {
     classRemove(arrayTbodyTr, 'active', even.target);
     even.target.closest('tr').classList.toggle('active');
+  });
+});
+
+tbody.addEventListener('dblclick', (element) => {
+  const cell = element.target;
+  const cellText = cell.textContent.trim();
+
+  cell.innerHTML = `<input class='td-cell' value=''>`;
+
+  const tdField = cell.querySelector('.td-cell');
+
+  tdField.focus();
+
+  function saveValue() {
+    const newValue = tdField.value.trim();
+
+    if (newValue === '') {
+      cell.textContent = cellText;
+    } else {
+      cell.textContent = newValue;
+    }
+  }
+  tdField.addEventListener('blur', saveValue);
+
+  tdField.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      saveValue();
+      tdField.blur();
+    }
   });
 });
